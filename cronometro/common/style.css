@@ -1,0 +1,100 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    background: white;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.zona {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 300px;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+
+.zona img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.tiempo {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+.a { background: #4CAF50; }
+.b { background: #2196F3; }
+.c { background: #FF9800; }
+.centro { background: #9C27B0; }
+
+.stop {
+    background: #F44336;
+    color: white;
+    padding: 15px;
+    margin-top: 30px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 300px;
+}
+
+.atras {
+    background: #605f5f;
+    color: white;
+    padding: 15px;
+    margin-top: 30px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 300px;  
+    align-self: flex-start;  
+}
+
+.accion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 300px;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    border: none;    
+}
+
+.acciones {    
+    margin-top: 20px;
+}
+#resultados {
+    margin-top: 20px;
+    font-size: 18px;
+    white-space: pre-line;
+    text-align: left;
+}  
+
+.cronoMouse {
+    margin: 20px auto;   /* margen arriba/abajo 20px y auto a los lados */
+    display: block;      /* para que auto funcione */
+    width: 40%;          /* tu tamaño */
+}

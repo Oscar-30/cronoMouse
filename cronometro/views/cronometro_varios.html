@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../common/style.css">
+  <title>Cronómetros Varios</title>
+  <style>
+    .contenedor-boton {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .zona {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mini-btn {
+      padding: 5px 8px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+    }
+    .cambiar { background-color: #2196F3; }
+    .anadir { background-color: #4CAF50; }
+    .eliminar { background-color: #f44336; }
+  </style>
+</head>
+<body>
+  <a href="index.html">
+    <img class="cronoMouse" src="../img/CronoMouse text.png" width="30%">
+  </a>
+  <h1>Cronómetros Varios</h1>
+
+  <!-- Caja de texto para nombre del ratón -->
+  <input type="text" id="nombreRaton" placeholder="Nombre del ratón" 
+         style="margin-bottom: 20px; padding: 10px; font-size: 16px; width: 280px;">
+
+  <!-- Contenedor dinámico de botones -->
+  <div id="botonesZona"></div>
+
+  <div class="acciones">
+    <button class="accion anadir" style="background-color: rgb(43, 0, 142);" onclick="crearBoton()">Añadir Botón</button>
+    <button class="accion" style="background-color: rgb(217, 3, 3);" onclick="detener()">Detener</button>
+    <button class="accion" style="background:#00ca03;" onclick="guardar()">Guardar</button>
+    <button class="accion" style="background:#9C27B0;" onclick="restablecer()">Restablecer</button>
+  </div>
+
+  <button class="atras" onclick="location.href='index.html'">Atrás</button>
+
+  <div id="guardados" style="margin-top:20px; text-align:left; font-size:16px;"></div>
+
+<script>
+  let tiempos = {};
+  let inicio = null;
+  let zonaActiva = null;
+  let intervalo = null;
+  let contadorGuardados = 1;
+  let registros = [];
+  let contadorZonas = 0;
+
+  function crearBoton(nombre = null) {
+    contadorZonas++;
+    const id = "Z" + contadorZonas;
+    if (!nombre) nombre = "Objeto " + contadorZonas;
+    tiempos[id] = 0;
+
+    const cont = document.createElement("div");
+    cont.className = "contenedor-boton";
+    cont.id = "cont-" + id;
+
+    const btn = document.createElement("button");
+    btn.className = "zona";
+    btn.style.backgroundColor = generarColor();
+    btn.innerHTML = `
+      <img src="https://img.icons8.com/ios-filled/30/ffffff/stopwatch.png" alt="cronómetro">
+      <span class="nombreZona">${nombre}</span>
+      <span class="tiempo" id="t${id}">0:00.0</span>
+    `;
+    btn.onclick = () => cambiarZona(id);
+
+    // Botón cambiar nombre
+    const cambiarBtn = document.createElement("button");
+    cambiarBtn.className = "mini-btn cambiar";
+    cambiarBtn.innerText = "Cambiar nombre";
+    cambiarBtn.onclick = () => {
+      const nuevoNombre = prompt("Introduce un nuevo nombre:");
+      if (nuevoNombre) {
+        btn.querySelector(".nombreZona").innerText = nuevoNombre;
+      }
+    };
+
+    // Botón añadir
+    const anadirBtn = document.createElement("button");
+    anadirBtn.className = "mini-btn anadir";
+    anadirBtn.innerText = "Añadir";
+    anadirBtn.onclick = () => crearBoton();
+
+    // Botón eliminar
+    const eliminarBtn = document.createElement("button");
+    eliminarBtn.className = "mini-btn eliminar";
+    eliminarBtn.innerText = "Eliminar";
+    eliminarBtn.style.display = contadorZonas > 2 ? "inline-block" : "none";
+    eliminarBtn.onclick = () => {
+      delete tiempos[id];
+      cont.remove();
+    };
+
+    cont.appendChild(btn);
+    cont.appendChild(cambiarBtn);    
+    cont.appendChild(eliminarBtn);
+
+    document.getElementById("botonesZona").appendChild(cont);
+  }
+
+  function generarColor() {
+    return `hsl(${Math.random() * 360}, 70%, 50%)`;
+  }
+
+  function cambiarZona(nuevaZona) {
+    const ahora = Date.now();
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio);
+    }
+    zonaActiva = nuevaZona;
+    inicio = ahora;
+
+    if (!intervalo) {
+      intervalo = setInterval(actualizarPantalla, 100);
+    }
+  }
+
+  function detener() {
+    const ahora = Date.now();
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio);
+    }
+    clearInterval(intervalo);
+    intervalo = null;
+    zonaActiva = null;
+  }
+
+  function guardar() {
+    detener();
+    let nombre = document.getElementById("nombreRaton").value.trim();
+    if (!nombre) {
+      nombre = `Guardado por defecto de ratón ${contadorGuardados}`;
+    }
+    contadorGuardados++;
+
+    let registro = { nombre };
+    for (const id in tiempos) {
+      registro[id] = tiempos[id];
+    }
+    registros.push(registro);
+    mostrarGuardados();
+  }
+
+  function mostrarGuardados() {
+    const div = document.getElementById("guardados");
+    div.innerHTML = "<h3>Guardados:</h3>";
+    registros.forEach(r => {
+      let line = `<strong>${r.nombre}</strong><br>`;
+      for (const id in r) {
+        if (id !== "nombre") {
+          line += `${id}: ${formatearTiempo(r[id])} | `;
+        }
+      }
+      div.innerHTML += line + "<br><br>";
+    });
+  }
+
+  function restablecer() {
+    detener();
+    for (const id in tiempos) {
+      tiempos[id] = 0;
+      document.getElementById("t" + id).innerText = "0:00.0";
+    }
+  }
+
+  function actualizarPantalla() {
+    const ahora = Date.now();
+    let temp = { ...tiempos };
+    if (zonaActiva !== null) {
+      temp[zonaActiva] += (ahora - inicio);
+    }
+    for (const id in temp) {
+      const el = document.getElementById("t" + id);
+      if (el) el.innerText = formatearTiempo(temp[id]);
+    }
+  }
+
+  function formatearTiempo(ms) {
+    let totalDecimas = Math.floor(ms / 100);
+    let decimas = totalDecimas % 10;
+    let totalSegundos = Math.floor(totalDecimas / 10);
+    let segundos = totalSegundos % 60;
+    let minutos = Math.floor(totalSegundos / 60);
+    return `${minutos}:${segundos.toString().padStart(2, '0')}.${decimas}`;
+  }
+
+  // Crear los dos botones iniciales
+  crearBoton("Objeto A");
+  crearBoton("Objeto B");
+</script>
+</body>
+</html>

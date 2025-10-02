@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../common/style.css">
+  <title>Cronómetro Y-maze</title>
+</head>
+<body>
+    <a href="index.html">
+        <img class="cronoMouse" src="../img/CronoMouse text.png" width="30%">
+    </a>
+  <h1>Cronómetro Laberinto Y</h1>
+
+  <!-- Caja de texto para nombre del ratón -->
+  <input type="text" id="nombreRaton" placeholder="Nombre del ratón" style="margin-bottom: 20px; padding: 10px; font-size: 16px; width: 280px;">
+
+  <button class="zona a" onclick="cambiarZona('A')">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+    Brazo A 
+    <span class="tiempo" id="tA">0:00.0</span>
+  </button>
+
+  <button class="zona b" onclick="cambiarZona('B')">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+    Brazo B 
+    <span class="tiempo" id="tB">0:00.0</span>
+  </button>
+
+  <button class="zona c" onclick="cambiarZona('C')">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+    Brazo C 
+    <span class="tiempo" id="tC">0:00.0</span>
+  </button>  
+
+  <div class="acciones">
+      <button class="accion" style="background-color: rgb(217, 3, 3);" onclick="detener()">Detener</button>
+      <button class="accion" style="background:#00ca03;" onclick="guardar()">Guardar</button>
+      <button class="accion" style="background:#9C27B0;" onclick="restablecer()">Restablecer</button>
+  </div>
+  
+
+  <button class="atras" onclick="location.href='index.html'">Atrás</button>
+
+  <div id="guardados" style="margin-top:20px; text-align:left; font-size:16px;"></div>
+
+<script>
+  let tiempos = { A: 0, B: 0, C: 0 };
+  let inicio = null;
+  let zonaActiva = null;
+  let intervalo = null;
+  let contadorGuardados = 1;
+  let registros = [];
+
+  function cambiarZona(nuevaZona) {
+    const ahora = Date.now();
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio);
+    }
+    zonaActiva = nuevaZona;
+    inicio = ahora;
+
+    if (!intervalo) {
+      intervalo = setInterval(actualizarPantalla, 100);
+    }
+  }
+
+  function detener() {
+    const ahora = Date.now();
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio);
+    }
+    clearInterval(intervalo);
+    intervalo = null;
+    zonaActiva = null;
+  }
+
+  function guardar() {
+    detener(); // aseguro que no siga corriendo
+
+    let nombre = document.getElementById("nombreRaton").value.trim();
+    if (!nombre) {
+      nombre = `Guardado por defecto de ratón ${contadorGuardados}`;
+    }
+    contadorGuardados++;
+
+    // buscar si ya existe el registro
+    let existente = registros.find(r => r.nombre === nombre);
+
+    if (existente) {
+      // sumamos los tiempos
+      existente.A += tiempos.A;
+      existente.B += tiempos.B;
+      existente.C += tiempos.C;
+    } else {
+      // creamos uno nuevo
+      let registro = {
+        nombre: nombre,
+        A: tiempos.A,
+        B: tiempos.B,
+        C: tiempos.C
+      };
+      registros.push(registro);
+    }
+
+    mostrarGuardados();
+  }
+
+  function mostrarGuardados() {
+    const div = document.getElementById("guardados");
+    div.innerHTML = "<h3>Guardados:</h3>";
+    registros.forEach((r, index) => {
+      div.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <strong>${r.nombre}</strong><br>
+          A: ${formatearTiempo(r.A)} | 
+          B: ${formatearTiempo(r.B)} | 
+          C: ${formatearTiempo(r.C)}
+          <button onclick="eliminar(${index})" style="margin-left:10px; background:#d32f2f; color:white; border:none; padding:3px 6px; border-radius:4px; cursor:pointer;">Eliminar</button>
+        </div>
+      `;
+    });
+  }
+
+  function eliminar(index) {
+    registros.splice(index, 1);
+    mostrarGuardados();
+  }
+
+  function restablecer() {
+    detener();
+    tiempos = { A: 0, B: 0, C: 0 };
+    document.getElementById("tA").innerText = "0:00.0";
+    document.getElementById("tB").innerText = "0:00.0";
+    document.getElementById("tC").innerText = "0:00.0";
+  }
+
+  function actualizarPantalla() {
+    const ahora = Date.now();
+    let temp = { ...tiempos };
+
+    if (zonaActiva !== null) {
+      temp[zonaActiva] += (ahora - inicio);
+    }
+
+    document.getElementById("tA").innerText = formatearTiempo(temp.A);
+    document.getElementById("tB").innerText = formatearTiempo(temp.B);
+    document.getElementById("tC").innerText = formatearTiempo(temp.C);
+  }
+
+  function formatearTiempo(ms) {
+    let totalDecimas = Math.floor(ms / 100);
+    let decimas = totalDecimas % 10;
+    let totalSegundos = Math.floor(totalDecimas / 10);
+    let segundos = totalSegundos % 60;
+    let minutos = Math.floor(totalSegundos / 60);
+
+    return `${minutos}:${segundos.toString().padStart(2, '0')}.${decimas}`;
+  }
+</script>
+
+</body>
+</html>
