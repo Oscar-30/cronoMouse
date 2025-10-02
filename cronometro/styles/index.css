@@ -16,7 +16,7 @@ h1 {
 
 .btn {
     width: 250px;
-    padding: 20px;
+    padding: 20px 10px;
     margin: 10px;
     font-size: 20px;
     border: none;
@@ -29,4 +29,34 @@ h1 {
 
 .btn:active {
     transform: scale(0.95);
+}
+
+
+@media (max-width: 768px) {
+
+.cronoMouse {
+    display: block;
+    width: 80%; 
+}
+.btn {
+    width: 80%;
+    font-size: 18px;
+    padding: 25px 15px;
+    margin: 20px 0;
+}
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+
+.cronoMouse {
+    margin: 20px auto;
+    display: block;
+    width: 80%; 
+}
+.btn {
+    width: 70%;
+    font-size: 18px;
+    padding: 25px 15px;
+    margin: 20px 0;
+}
 }
