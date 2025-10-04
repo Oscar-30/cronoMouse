@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../styles/cronometro_caja.css">
   <link rel="stylesheet" href="../common/style.css">
   <title>Cronómetro Caja</title>
 </head>
@@ -17,17 +18,33 @@
   <input type="text" id="nombreRaton" placeholder="Nombre del ratón" 
          style="margin-bottom: 20px; padding: 10px; font-size: 16px; width: 280px;">
 
-  <button class="zona a" onclick="cambiarZona('A')">
-    <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
-    Exterior caja 
-    <span class="tiempo" id="tA">0:00.0</span>
-  </button>
+  <!-- Exterior -->
+  <div class="fila-zona">
+    <span id="contadorEntradasExterior" class="contador">0</span>
+    <button class="zona a" onclick="cambiarZona('A')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+      Exterior caja 
+      <span class="tiempo" id="tA">0:00.0</span>
+    </button>
+    <button class="velocidad" onclick="cambiarVelocidad()">
+      X2
+    </button>
+  </div>
 
-  <button class="zona b" onclick="cambiarZona('B')">
-    <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
-    Interior caja
-    <span class="tiempo" id="tB">0:00.0</span>
-  </button>
+  <!-- Interior con contador -->
+  <div class="fila-zona">
+    <span id="contadorEntradas" class="contador">0</span>
+    <button class="zona b" onclick="cambiarZona('B')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+      Interior caja
+      <span class="tiempo" id="tB">0:00.0</span>
+    </button>
+    <div>
+      <button class="velocidad" onclick="cambiarVelocidad()">
+        X2
+      </button>
+    </div>
+  </div>
 
   <div class="acciones">
     <button class="accion" style="background-color: rgb(217, 3, 3);" onclick="detener()">Detener</button>
@@ -39,115 +56,186 @@
 
   <div id="guardados" style="margin-top:20px; text-align:left; font-size:16px;"></div>
 
-  <script>
-    let tiempos = { A: 0, B: 0 };
-    let inicio = null;
-    let zonaActiva = null;
-    let intervalo = null;
-    let contadorGuardados = 1;
-    let registros = [];
+</body>
+<script>
+  let tiempos = { A: 0, B: 0 };
+  let inicio = null;
+  let zonaActiva = null;
+  let ultimoZona = null; // <-- guardamos la última zona real (para lógica de contadores)
+  let intervalo = null;
+  let contadorGuardados = 1;
+  let registros = [];
+  let contadorEntradas = 0;
+  let contadorEntradasExterior = 0;
 
-    function cambiarZona(nuevaZona) {
-      const ahora = Date.now();
-      if (zonaActiva !== null) {
-        tiempos[zonaActiva] += (ahora - inicio);
-      }
-      zonaActiva = nuevaZona;
-      inicio = ahora;
+  // Factor de velocidad (1 = normal, 2 = doble)
+  let factorVelocidad = 1;
 
-      if (!intervalo) {
-        intervalo = setInterval(actualizarPantalla, 100);
-      }
+  function cambiarZona(nuevaZona) {
+    const ahora = Date.now();
+
+    // Guardamos el tiempo transcurrido en la zona anterior usando el factor actual
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
     }
 
-    function detener() {
-      const ahora = Date.now();
-      if (zonaActiva !== null) {
-        tiempos[zonaActiva] += (ahora - inicio);
-      }
-      clearInterval(intervalo);
-      intervalo = null;
-      zonaActiva = null;
+    // PrevZona: si hay una zona activa, es la actual; si no, usamos la última zona conocida
+    const prevZona = (zonaActiva !== null) ? zonaActiva : ultimoZona;
+
+    // Incrementos solo si realmente cambiamos de otra zona distinta a la nueva
+    if (nuevaZona === "B" && prevZona !== "B") {
+      contadorEntradas++;
+      document.getElementById("contadorEntradas").innerText = contadorEntradas;
+    }
+    if (nuevaZona === "A" && prevZona !== "A") {
+      contadorEntradasExterior++;
+      document.getElementById("contadorEntradasExterior").innerText = contadorEntradasExterior;
     }
 
-    function guardar() {
-      detener();
+    zonaActiva = nuevaZona;
+    inicio = ahora;
+    ultimoZona = nuevaZona;
 
-      let nombre = document.getElementById("nombreRaton").value.trim();
-      if (!nombre) {
-        nombre = `Guardado por defecto de ratón ${contadorGuardados}`;
-      }
-      contadorGuardados++;
-
-      // buscar si ya existe el registro
-      let existente = registros.find(r => r.nombre === nombre);
-
-      if (existente) {
-        // sumamos los tiempos
-        existente.A += tiempos.A;
-        existente.B += tiempos.B;
-      } else {
-        // creamos uno nuevo
-        let registro = {
-          nombre: nombre,
-          A: tiempos.A,
-          B: tiempos.B
-        };
-        registros.push(registro);
-      }
-
-      mostrarGuardados();
+    if (!intervalo) {
+      intervalo = setInterval(actualizarPantalla, 100);
     }
+  }
 
-    function mostrarGuardados() {
-      const div = document.getElementById("guardados");
-      div.innerHTML = "<h3>Guardados:</h3>";
-      registros.forEach((r, index) => {
-        div.innerHTML += `
-          <div style="margin-bottom:10px;">
-            <strong>${r.nombre}</strong><br>
-            Exterior: ${formatearTiempo(r.A)} | 
-            Interior: ${formatearTiempo(r.B)}
-            <button onclick="eliminar(${index})" 
-                    style="margin-left:10px; background:#d32f2f; color:white; border:none; padding:3px 6px; border-radius:4px; cursor:pointer;">X</button>
-          </div>
-        `;
+  function detener() {
+    const ahora = Date.now();
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
+      // recordamos la última zona para evitar contar al reanudar la misma
+      ultimoZona = zonaActiva;
+    }
+    clearInterval(intervalo);
+    intervalo = null;
+    zonaActiva = null;
+  }
+
+  function guardar() {
+    detener();
+
+    let nombre = document.getElementById("nombreRaton").value.trim();
+    if (!nombre) {
+      nombre = `Guardado por defecto de ratón ${contadorGuardados}`;
+    }
+    contadorGuardados++;
+
+    let existente = registros.find(r => r.nombre === nombre);
+
+    if (existente) {
+      existente.A += tiempos.A;
+      existente.B += tiempos.B;
+    } else {
+      registros.push({
+        nombre: nombre,
+        A: tiempos.A,
+        B: tiempos.B
       });
     }
 
-    function eliminar(index) {
-      registros.splice(index, 1);
-      mostrarGuardados();
+    mostrarGuardados();
+  }
+
+  function mostrarGuardados() {
+    const div = document.getElementById("guardados");
+    div.innerHTML = "<h3>Guardados:</h3>";
+    registros.forEach((r, index) => {
+      div.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <strong>${r.nombre}</strong><br>
+          Exterior: ${formatearTiempo(r.A)} | 
+          Interior: ${formatearTiempo(r.B)}
+          <button onclick="eliminar(${index})" 
+                  style="margin-left:10px; background:#d32f2f; color:white; border:none; padding:3px 6px; border-radius:4px; cursor:pointer;">X</button>
+        </div>
+      `;
+    });
+  }
+
+  function eliminar(index) {
+    registros.splice(index, 1);
+    mostrarGuardados();
+  }
+
+  function restablecer() {
+    detener();
+    tiempos = { A: 0, B: 0 };
+    document.getElementById("tA").innerText = "0:00.0";
+    document.getElementById("tB").innerText = "0:00.0";
+
+    contadorEntradas = 0;
+    document.getElementById("contadorEntradas").innerText = "0";
+
+    contadorEntradasExterior = 0;
+    document.getElementById("contadorEntradasExterior").innerText = "0";
+
+    ultimoZona = null;
+
+    // opcional: restaurar velocidad a 1 al restablecer
+    factorVelocidad = 1;
+    document.querySelectorAll(".velocidad").forEach(btn => btn.innerText = "X2");
+  }
+
+  function actualizarPantalla() {
+    const ahora = Date.now();
+    let temp = { ...tiempos };
+
+    if (zonaActiva !== null) {
+      temp[zonaActiva] += (ahora - inicio) * factorVelocidad;
     }
 
-    function restablecer() {
-      detener();
-      tiempos = { A: 0, B: 0 };
-      document.getElementById("tA").innerText = "0:00.0";
-      document.getElementById("tB").innerText = "0:00.0";
+    document.getElementById("tA").innerText = formatearTiempo(temp.A);
+    document.getElementById("tB").innerText = formatearTiempo(temp.B);
+  }
+
+  function formatearTiempo(ms) {
+    let totalDecimas = Math.floor(ms / 100);
+    let decimas = totalDecimas % 10;
+    let totalSegundos = Math.floor(totalDecimas / 10);
+    let segundos = totalSegundos % 60;
+    let minutos = Math.floor(totalSegundos / 60);
+
+    return `${minutos}:${segundos.toString().padStart(2, '0')}.${decimas}`;
+  }
+
+  // Toggle de velocidad
+  function cambiarVelocidad() {
+    const ahora = Date.now();
+
+    // si hay zona activa, primero acumulamos lo ya transcurrido con el factor actual
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
+      // reiniciamos el inicio a 'ahora' para la nueva velocidad
+      inicio = ahora;
     }
 
-    function actualizarPantalla() {
-      const ahora = Date.now();
-      let temp = { ...tiempos };
+    // alternamos factor
+    factorVelocidad = (factorVelocidad === 1) ? 2 : 1;
 
-      if (zonaActiva !== null) {
-        temp[zonaActiva] += (ahora - inicio);
-      }
+    // actualizamos textos de botones
+    document.querySelectorAll(".velocidad").forEach(btn => {
+      btn.innerText = (factorVelocidad === 1) ? "X2" : "X1";
+    });
 
-      document.getElementById("tA").innerText = formatearTiempo(temp.A);
-      document.getElementById("tB").innerText = formatearTiempo(temp.B);
-    }
+    // refrescamos la pantalla para que el cambio se vea inmediatamente
+    actualizarPantalla();
+  }
+</script>
 
-    function formatearTiempo(ms) {
-      let totalDecimas = Math.floor(ms / 100);
-      let decimas = totalDecimas % 10;
-      let totalSegundos = Math.floor(totalDecimas / 10);
-      let segundos = totalSegundos % 60;
-      let minutos = Math.floor(totalSegundos / 60);
 
-      return `${minutos}:${segundos.toString().padStart(2, '0')}.${decimas}`;
-    }
-  </script>
-</body>
 </html>
+
+
+<!-- Para una futura leyenda desplegable -->
+
+  <!-- <div class="info">
+    <p><strong>Instrucciones:</strong></p>
+    <ul>
+      <li>Usa los botones "Exterior caja" e "Interior caja" para cambiar de zona.</li>
+      <li>El cronómetro se detiene automáticamente al cambiar de zona.</li>
+      <li>El contador muestra cuántas veces ha entrado el ratón en la caja.</li>
+      <li>Usa "Detener" para pausar el cronómetro, "Guardar" para almacenar los tiempos y "Restablecer" para reiniciar todo.</li>
+    </ul>
+  </div> -->
