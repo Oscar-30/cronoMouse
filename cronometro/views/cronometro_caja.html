@@ -61,35 +61,40 @@
   let tiempos = { A: 0, B: 0 };
   let inicio = null;
   let zonaActiva = null;
+  let ultimoZona = null; // <-- guardamos la última zona real (para lógica de contadores)
   let intervalo = null;
   let contadorGuardados = 1;
   let registros = [];
   let contadorEntradas = 0;
   let contadorEntradasExterior = 0;
 
-  // ✅ Factor de velocidad (1 = normal, 2 = doble, etc.)
+  // Factor de velocidad (1 = normal, 2 = doble)
   let factorVelocidad = 1;
 
   function cambiarZona(nuevaZona) {
     const ahora = Date.now();
 
+    // Guardamos el tiempo transcurrido en la zona anterior usando el factor actual
     if (zonaActiva !== null) {
-      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad; // ✅ usar factor
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
     }
 
-    // ✅ Si cambiamos a B y antes no estábamos en B → incrementar contador
-    if (nuevaZona === "B" && zonaActiva !== "B") {
+    // PrevZona: si hay una zona activa, es la actual; si no, usamos la última zona conocida
+    const prevZona = (zonaActiva !== null) ? zonaActiva : ultimoZona;
+
+    // Incrementos solo si realmente cambiamos de otra zona distinta a la nueva
+    if (nuevaZona === "B" && prevZona !== "B") {
       contadorEntradas++;
       document.getElementById("contadorEntradas").innerText = contadorEntradas;
     }
-
-    if (nuevaZona === "A" && zonaActiva !== "A") {
+    if (nuevaZona === "A" && prevZona !== "A") {
       contadorEntradasExterior++;
       document.getElementById("contadorEntradasExterior").innerText = contadorEntradasExterior;
     }
 
     zonaActiva = nuevaZona;
     inicio = ahora;
+    ultimoZona = nuevaZona;
 
     if (!intervalo) {
       intervalo = setInterval(actualizarPantalla, 100);
@@ -99,7 +104,9 @@
   function detener() {
     const ahora = Date.now();
     if (zonaActiva !== null) {
-      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad; // ✅ usar factor
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
+      // recordamos la última zona para evitar contar al reanudar la misma
+      ultimoZona = zonaActiva;
     }
     clearInterval(intervalo);
     intervalo = null;
@@ -115,21 +122,17 @@
     }
     contadorGuardados++;
 
-    // buscar si ya existe el registro
     let existente = registros.find(r => r.nombre === nombre);
 
     if (existente) {
-      // sumamos los tiempos
       existente.A += tiempos.A;
       existente.B += tiempos.B;
     } else {
-      // creamos uno nuevo
-      let registro = {
+      registros.push({
         nombre: nombre,
         A: tiempos.A,
         B: tiempos.B
-      };
-      registros.push(registro);
+      });
     }
 
     mostrarGuardados();
@@ -167,6 +170,12 @@
 
     contadorEntradasExterior = 0;
     document.getElementById("contadorEntradasExterior").innerText = "0";
+
+    ultimoZona = null;
+
+    // opcional: restaurar velocidad a 1 al restablecer
+    factorVelocidad = 1;
+    document.querySelectorAll(".velocidad").forEach(btn => btn.innerText = "X2");
   }
 
   function actualizarPantalla() {
@@ -174,7 +183,7 @@
     let temp = { ...tiempos };
 
     if (zonaActiva !== null) {
-      temp[zonaActiva] += (ahora - inicio) * factorVelocidad; // ✅ usar factor
+      temp[zonaActiva] += (ahora - inicio) * factorVelocidad;
     }
 
     document.getElementById("tA").innerText = formatearTiempo(temp.A);
@@ -191,21 +200,30 @@
     return `${minutos}:${segundos.toString().padStart(2, '0')}.${decimas}`;
   }
 
-  // ✅ Cambiar velocidad al pulsar botón
+  // Toggle de velocidad
   function cambiarVelocidad() {
-    factorVelocidad = factorVelocidad === 1 ? 2 : 1;
+    const ahora = Date.now();
 
-    // cambiar texto en todos los botones de velocidad
+    // si hay zona activa, primero acumulamos lo ya transcurrido con el factor actual
+    if (zonaActiva !== null) {
+      tiempos[zonaActiva] += (ahora - inicio) * factorVelocidad;
+      // reiniciamos el inicio a 'ahora' para la nueva velocidad
+      inicio = ahora;
+    }
+
+    // alternamos factor
+    factorVelocidad = (factorVelocidad === 1) ? 2 : 1;
+
+    // actualizamos textos de botones
     document.querySelectorAll(".velocidad").forEach(btn => {
-      btn.innerText = factorVelocidad === 1 ? "X2" : "X1";
+      btn.innerText = (factorVelocidad === 1) ? "X2" : "X1";
     });
 
-    // Reiniciar "inicio" para que no se descuadre el cálculo
-    if (zonaActiva !== null) {
-      inicio = Date.now();
-    }
+    // refrescamos la pantalla para que el cambio se vea inmediatamente
+    actualizarPantalla();
   }
 </script>
+
 
 </html>
 
