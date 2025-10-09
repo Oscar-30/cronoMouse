@@ -1,0 +1,36 @@
+.fila-zona {
+  display: flex;
+  align-items: center;
+  justify-content:center;
+  width: 350px;   /* mismo ancho para todas las filas */
+  margin: 10px;    
+  padding: 0px 20px; /* espacio interno a la izquierda y derecha */
+  gap: 10px; /* espacio entre los elementos */
+}
+
+.contador {
+  font-size: 20px;
+  font-weight: bold;
+  color: black;
+  margin-right: 0px;
+  padding: 5px;
+  border: black 2px solid;
+  border-radius: 3px;
+}
+
+.velocidad {
+    background: #ff9800;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 2px solid transparent; /* 👈 borde siempre presente */
+    border-radius: 10px;
+    cursor: pointer;
+    margin-left: auto;
+    box-sizing: border-box; /* 👈 asegura que el tamaño no cambie */
+}
+
+.velocidad:hover {
+    background: #e68a00;
+    border-color: black;
+}
