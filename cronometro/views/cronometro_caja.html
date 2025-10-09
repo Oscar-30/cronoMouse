@@ -38,12 +38,10 @@
       <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
       Interior caja
       <span class="tiempo" id="tB">0:00.0</span>
-    </button>
-    <div>
+    </button>    
       <button class="velocidad" onclick="cambiarVelocidad()">
         X2
-      </button>
-    </div>
+      </button>    
   </div>
 
   <div class="acciones">
@@ -128,11 +126,12 @@
       existente.A += tiempos.A;
       existente.B += tiempos.B;
     } else {
-      registros.push({
+      let registro = {
         nombre: nombre,
         A: tiempos.A,
-        B: tiempos.B
-      });
+        B: tiempos.B,        
+      };
+      registros.push(registro);
     }
 
     mostrarGuardados();
