@@ -7,7 +7,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 20px;
-    background: white;    
+    background: white;
 }
 
 h1 {
@@ -24,8 +24,8 @@ h1 {
     border-radius: 10px;
     font-size: 18px;
     color: white;
-    cursor: pointer;    
-    box-sizing: border-box;
+    cursor: pointer;
+    border: none;
 }
 
 .zona img {

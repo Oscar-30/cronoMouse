@@ -16,6 +16,29 @@
   <!-- Caja de texto para nombre del ratón -->
   <input type="text" id="nombreRaton" placeholder="Nombre del ratón" style="margin-bottom: 20px; padding: 10px; font-size: 16px; width: 280px;">
 
+  <!-- Los botones C y D van en el mismo div para ponerlos encima de A -->
+  <div class="fila-zona">
+    <span id="contadorEntradasC" class="contador">0</span>
+    <button class="zona c" onclick="cambiarZona('C')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+      Zona C
+      <span class="tiempo" id="tC">0:00.0</span>
+    </button>    
+      <button class="velocidad" onclick="cambiarVelocidad()">
+        X2
+      </button> 
+
+    <span id="contadorEntradasB" class="contador">0</span>
+    <button class="zona b" onclick="cambiarZona('B')">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
+      Zona B
+      <span class="tiempo" id="tB">0:00.0</span>
+    </button>    
+      <button class="velocidad" onclick="cambiarVelocidad()">
+        X2
+      </button>   
+  </div>
+
   <div class="fila-zona">
     <span id="contadorEntradasA" class="contador">0</span>
     <button class="zona a" onclick="cambiarZona('A')">
@@ -28,19 +51,9 @@
     </button>
   </div>
 
-  <div class="fila-zona">
-    <span id="contadorEntradasB" class="contador">0</span>
-    <button class="zona b" onclick="cambiarZona('B')">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
-      Zona B
-      <span class="tiempo" id="tB">0:00.0</span>
-    </button>    
-      <button class="velocidad" onclick="cambiarVelocidad()">
-        X2
-      </button>    
-  </div>
 
-  <div class="fila-zona">
+
+  <!-- <div class="fila-zona">
     <span id="contadorEntradasC" class="contador">0</span>
     <button class="zona c" onclick="cambiarZona('C')">
       <img src="https://img.icons8.com/ios-filled/50/ffffff/stopwatch.png" alt="cronómetro"> 
@@ -50,7 +63,7 @@
       <button class="velocidad" onclick="cambiarVelocidad()">
         X2
       </button>    
-  </div>
+  </div> -->
 
   <div class="acciones">
       <button class="accion" style="background-color: rgb(217, 3, 3);" onclick="detener()">Detener</button>
